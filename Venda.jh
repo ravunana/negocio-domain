@@ -1,0 +1,50 @@
+entity Cliente {
+    tipoPessoa String required,
+    nome String required,
+    nif String unique,
+    sexo String,
+    nascimento LocalDate,
+    telefone String required unique,
+    email String unique,
+    morada String
+}
+
+entity Venda {
+    tipoDocumento String required,
+	numero String unique required,
+    data ZonedDateTime,
+    observacaoGeral TextBlob,
+    observacaoInterna TextBlob
+}
+
+entity ItemVenda {
+	quantidade Double min(1),
+    valor BigDecimal min(0),
+    desconto Double min(0) max(100) // em porcentagem
+    data ZonedDateTime,
+
+    itemDescricao String required,
+    itemReferencia String required
+}
+
+entity DevolucaoVenda {
+    quantidade Double min(1),
+    valor Double min(0),
+    desconto Double min(0),
+    data ZonedDateTime,
+    descricao TextBlob
+}
+
+relationship OneToMany {
+	Venda to ItemVenda{venda(numero) required},
+    Cliente to Venda{cliente(telefone) required}
+}
+
+relationship OneToOne {
+    DevolucaoVenda{item required} to ItemVenda
+}
+
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+filter Venda, ItemVenda, DevolucaoVenda

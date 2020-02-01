@@ -1,0 +1,53 @@
+entity Conta {
+    classe String required,
+    descricao String required,
+    codigo String required unique,
+    tipo String required,
+    grau Integer required,
+    natureza String required, // Credora (C+), Devedora(D-), Nula
+    grupo String required, // Activo, Passivo {Circulante e nao circulante}, Patrimonio liquido
+    conteudo TextBlob,
+    regraDebito TextBlob,
+    regraCredito TextBlob
+}
+
+entity EscrituracaoContabil {
+    tipoLancamento String required, // N, R, I go to Diario Republica
+    numero String unique required,
+    historico TextBlob required,
+    valor BigDecimal required min(0),
+    data ZonedDateTime required
+
+    //
+    interno Boolean required,
+    numeroFactura String unique, // se gerado no sistema numero da factura
+    tipoFactura String, // Compra, Venda, Recibo, Nota debito, Nota credito
+    dataDocumento LocalDate required,
+    anexo AnyBlob,
+
+    contador String required // Se interno = true => ("SISTEMA") se nao ("Nome do utilizador")
+}
+
+entity Debito {
+    valor BigDecimal required min(0)
+}
+
+entity Credito {
+    valor BigDecimal required min(0)
+}
+
+/**
+ * One to many relationship.
+ */
+relationship OneToMany {
+    Conta to Conta{contaAgregadora(descricao)},
+    Conta to Debito{contaDebitar(codigo) required},
+    Conta to Credito{contaCreditar(codigo) required},
+    EscrituracaoContabil to Debito{lancamentoDebito(numero) required},
+    EscrituracaoContabil to Credito{lancamentoCredito(numero) required}
+}
+
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+filter Conta, EscrituracaoContabil, Debito, Credito

@@ -1,0 +1,113 @@
+
+entity Software(rv_software) {
+	empresa String required,
+    tipoSistema String required, // DP
+    nif String required,
+    numeroValidacaoAGT Integer required, // DP
+    nome String maxlength(255) required,
+    versao String maxlength(30) required,
+    hashCode String required,
+    hashControl String required
+}
+
+entity LicencaSoftware(rv_licensa) {
+    tipoSubscricao String required, // MENSAL, SEMESTRAL, ANUAL
+    inicio ZonedDateTime required,
+    fim ZonedDateTime required,
+    data ZonedDateTime,
+    valor BigDecimal min(0) required,
+    codigo String unique required,
+    numeroUsuario Integer min(1),
+    numeroEmpresa Integer min(1)
+}
+
+enum EntidadeSistema {
+    NOME_ENTIDADE
+}
+
+entity Lookup {
+    nome String unique required, // Masculino, Pai
+    sigla String unique required, // M, PAIA
+    descricao TextBlob,
+    usuario Boolean,
+    entidade EntidadeSistema
+}
+
+// Aprovado, Reporvado, EM analise, Pesquisa de fornecedor
+entity FluxoDocumento(core_fluxo_documento) {
+    nome String required unique,
+    aumentaEstoque Boolean,
+    aumentaValorCaixa Boolean,
+    cor String,
+    padrao Boolean required,
+    descricao TextBlob,
+    entidade EntidadeSistema required
+}
+
+// Factura, Recibo, Proforma, Ordem de servico, Ordem de compra
+entity DocumentoComercial(core_documento_comercial) {
+    nome String required unique,
+    serie String required unique,
+    padrao Boolean required,
+    movimentaEstoque Boolean required,
+    movimentaCaixa Boolean required,
+    movimentaContabilidade Boolean required,
+    cor String,
+    descricao TextBlob,
+    mostraPontoVenda Boolean,
+    entidade EntidadeSistema required
+}
+
+entity Imposto(tbr_imposto) {
+    tipoImposto String required,
+    codigoImposto String required,
+    porcentagem Boolean required,
+    valor BigDecimal required min(0),
+    descricao TextBlob, // Ex. Imposto de rendimento de trabalho (IRT), Imposto de valor ascrecentado (IVA)
+    pais String,
+    vigencia LocalDate
+}
+
+// fim pessoa module
+
+// inicio empresa module
+entity Empresa {
+	tipoSociedade String, // ANONIMA, LIMITADA, PUBLICA EP
+	nome String required unique,
+    logotipo ImageBlob required,
+    capitalSocial BigDecimal min(0),
+    fundacao LocalDate,
+    cae String required unique,
+    nif String required maxlength(20) unique,
+    numeroRegistroEstatistico String unique required,
+    designacaoComercial TextBlob, // o que faz a empresa
+
+	pais String,
+	provincia String,
+    municipio String,
+    bairro String required,
+    rua String maxlength(200) required,
+    quarteirao String maxlength(10),
+    numeroPorta String maxlength(10)
+}
+
+entity ContactoEmpresa {
+	tipoContacto String required,
+	descricao String,
+    contacto String unique required,
+    mostrarFactura Boolean
+}
+
+relationship OneToMany {
+    Empresa to ContactoEmpresa{empresa(nome) required},
+    Software to LicencaSoftware{software(nome)},
+    Empresa to LicencaSoftware{empresa(nome) required}
+}
+
+
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+filter Lookup, Empresa
+filter Imposto
+

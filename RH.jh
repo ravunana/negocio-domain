@@ -1,0 +1,150 @@
+entity Colaborador {
+    // dados pessoais
+    nome String,
+    sexo String,
+    nascimento LocalDate,
+    pai String,
+    mae String,
+    naturalidade String,
+    nacionalidade String,
+    numeroProcesso String,
+
+    // documento
+    numeroDocumento String,
+    emissao LocalDate,
+    validade LocalDate,
+    localEmissao String,
+
+    //morada
+    provincia String,
+    municipio String,
+    bairro String,
+    rua String,
+    quarteirao String,
+    numeroResidencia String,
+    situacao String, // ESTAGIO, DESPEDIDO, SUSPENSO, NORMAL
+
+    dependenciaBancaria String,
+    contabancaria String
+}
+
+entity AgregadoFamiliar {
+    nome String,
+    sexo String,
+    nascimento LocalDate
+}
+
+entity Departamento {
+    descricao String
+}
+
+entity Funcao {
+    nome String,
+    descricao TextBlob,
+    salario BigDecimal
+}
+
+entity Cargo {
+    nome String,
+    descricao TextBlob,
+    subsidio BigDecimal
+}
+
+entity Remuneracao {
+    descricao String,
+    valor Double,
+    percentagem Boolean,
+    quantidade Integer
+}
+
+entity Desconto {
+    descricao String,
+    valor Double,
+    percentagem Boolean,
+    quantidade Integer
+}
+
+entity ContratoTrabalho {
+    de LocalDate,
+    ate LocalDate,
+    salarioHora BigDecimal,
+    numero String,
+    cargaHorariaSemanal Integer,
+    diasTRabalhoSemanal Integer,
+    anexo AnyBlob,
+    data ZonedDateTime,
+    modalidadeContrato String, // TERMO CERTO, TERMO INCERTO
+    tipoContrato String, // TEMPO INDETERMINADO, TEMPO DETERMINADO
+    categoria String // ESTAGIO, PRESTACAO DE SERVICO, APRENDIZAGEM
+}
+
+entity JornadaTrabalho {
+    // Horario
+    horararioEntrada ZonedDateTime,
+    horarioSaida ZonedDateTime,
+    horarioPausa ZonedDateTime,
+    tempoPausa Integer,
+    turno String // DIURNO, NOTURNO
+}
+
+entity TabelaFeriado {
+    mes String,
+    dia Integer,
+    descricao String
+}
+
+entity PeridoTrabalho {
+    inicio String,
+    fim String,
+    descricao String required unique // INICIO_LABORAL, PAUSA_DESCANSO, REGRESSO_DESCANSO, FIM_LABORAL
+}
+
+entity RelogioPonto {
+    momento Instant,
+    data LocalDate,
+    estado String required, // PRESENTE, AUSENTE, JUSTIFICADO
+    anexo AnyBlob
+}
+
+entity Feria {
+    de LocalDate,
+    ate LocalDate,
+    mes String,
+    concluida Boolean
+}
+
+entity Organograma {
+
+}
+
+entity AnaliseDesenpenho {
+
+}
+
+/**
+ * Many to one relationship.
+ */
+relationship ManyToOne {
+    Organograma{de(descricao)} to Cargo,
+    Organograma{para(descricao)} to Cargo,
+    PeridoTrabalho to RelogioPonto{perido(descricao) required},
+    Colaborador to RelogioPonto{colaborador(numeroProcesso) required}
+}
+
+relationship ManyToMany {
+    Departamento{funcao(descricao) required} to Funcao,
+    ContratoTrabalho{departamento(descricao) required} to Departamento,
+    ContratoTrabalho{cargo(descricao)} to Cargo,
+    ContratoTrabalho{desconto(descricao) required} to Desconto,
+    ContratoTrabalho{vencimento(descricao) required} to Remuneracao,
+    ContratoTrabalho to JornadaTrabalho{contrato(numero) required}
+}
+
+/**
+ * One to many relationship.
+ */
+relationship OneToMany {
+    Colaborador to ContratoTrabalho{colaborador(nome) required},
+    Colaborador to AgregadoFamiliar{colaborador(nome) required},
+    Colaborador to Feria{colaborador(nome) required}
+}

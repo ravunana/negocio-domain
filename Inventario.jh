@@ -1,0 +1,127 @@
+entity UnidadeMedida {
+    nome String unique required,
+    sigla String unique required,
+    valor Double required min(0)
+}
+
+entity LocalArmazenamento {
+    nome String required unique,
+    descricao TextBlob
+}
+
+entity CompostoMercadoria {
+    quantidade Double required min(1),
+    valor BigDecimal,
+    permanente Boolean // opcao se permanate nao dimui o estoque na venda do composto
+}
+
+entity FamiliaMercadoria {
+	nome String required unique,
+    descricao TextBlob
+}
+
+entity Mercadoria {
+    // essencial
+    tipo String, // Mercadoria, Servico, Outro, Imposto especial de consumo, DP
+    ean String unique, // codigo de barra ou <Tipo> <Sequencia>
+    numero String required unique,
+    nome String required,
+    imagem ImageBlob,
+    composto Boolean required,
+    // Inventario
+    estoqueMinimo Double min(0),
+    estoqueMaximo Double min(0)
+    // extra information
+    descricao TextBlob,
+    mostrarPontoVenda Boolean,
+    prazoEntrega String // Ex. 1 hora, 1 dia, 1 semana, 1 mes, 1 ano ...
+
+}
+
+entity Inventario {
+    quantidade Double required min(1),
+    valor BigDecimal min(0) required,
+    tipo String, // ENTRADA, SAIDA
+    data ZonedDateTime
+}
+
+entity EstruturaCalculo {
+    data Instant,
+    preco BigDecimal,
+    custo BigDecimal,
+    margemLucro Double
+}
+
+entity TabelaAmortizacao {
+    actividadeEconomica String required,
+    percentagem Double min(0) max(100) required,
+    categoria String required,
+    referencia String required
+}
+
+entity DetalheAduaneiro {
+    // aduaneiro - fiscal
+    numeroONU String unique,
+    largura Double, // unidade metro
+    altura Double,
+    pesoLiquido Double,
+    pesoBruto Double, // unidade kilograma
+    dataFabrico LocalDate,
+    dataExpiracao LocalDate
+}
+
+entity VariacaoMercadoria {
+    // Detalhes do Mercadoria
+    genero String,
+    cor String,
+    modelo String,
+    marca String,
+    tamanho String
+}
+
+entity FornecedorMercadoria  {
+    nome String,
+    referencia String required
+}
+
+entity ImpostoMercadoria {
+    descricao String required,
+    valor BigDecimal min(0) required,
+    percentagem Boolean required
+}
+
+/**
+ * One to many relationship.
+ */
+relationship OneToMany {
+    FamiliaMercadoria to FamiliaMercadoria{hierarquia(nome)},
+    LocalArmazenamento to LocalArmazenamento{hierarquia(nome)},
+    UnidadeMedida to UnidadeMedida{para(nome) required}
+    LocalArmazenamento to Mercadoria{localArmazenamento(nome)},
+    FamiliaMercadoria to Mercadoria{familia(nome) required},
+    UnidadeMedida to CompostoMercadoria{unidade(nome) required},
+    Mercadoria to CompostoMercadoria{composto(nome) required },
+    UnidadeMedida to Mercadoria{unidade(nome) required},
+    Mercadoria to EstruturaCalculo{Mercadoria(nome) required},
+    Mercadoria to FornecedorMercadoria{Mercadoria(nome) required},
+    Mercadoria to ImpostoMercadoria{mercadoria(nome)},
+    Mercadoria to Inventario{mercadoria(nome) required},
+    TabelaAmortizacao to Mercadoria{taxaAmortizacao(categoria) required}
+}
+
+/**
+ * Many to one relationship.
+ */
+relationship ManyToOne {
+    CompostoMercadoria{Mercadoria(nome) required} to Mercadoria
+}
+
+relationship OneToOne {
+    DetalheAduaneiro{Mercadoria(nome) required} to Mercadoria,
+    VariacaoMercadoria{Mercadoria(nome) required} to Mercadoria
+}
+
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+filter Mercadoria, CompostoMercadoria

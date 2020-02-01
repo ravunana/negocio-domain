@@ -1,0 +1,84 @@
+entity Fornecedor {
+    nome String required,
+    tipoPessoa String required,
+    nif String unique,
+    cae String unique,
+    contactoPrincipal String required,
+    contactoSecundario String,
+    email String unique,
+    site String unique,
+
+	// certificadoISO9001 Boolean,
+    // garantiaDefeitoFabrica Boolean,
+    // transporte Boolean,
+    // qualidade Double min(0) max(10),
+    // pagamentoPrazo Boolean,
+    // metodosPagamento TextBlob,
+    // classificacao Double min(0) max(10) required,
+    // descricao TextBlob,
+    // ativo Boolean,
+    // numero String unique required,
+
+	pais String,
+	provincia String,
+    municipio String,
+    bairro String required,
+    rua String maxlength(200) required,
+    quarteirao String maxlength(10),
+    numeroPorta String maxlength(10)
+}
+
+entity Compra {
+    tipoDocumento String required,
+	numero String required unique,
+    data ZonedDateTime,
+    observacaoGeral TextBlob,
+    observacaoInterna TextBlob,
+    funcionario String required
+}
+
+entity ItemCompra {
+    quantidade Double min(1) required,
+    desconto Double min(0) max(100) required, // em percentagem
+    dataSolicitacao ZonedDateTime required,
+    dataEntrega ZonedDateTime,
+    descricao TextBlob,
+    valor BigDecimal required min(0),
+    solicitante String required,
+    estado String required,
+
+    itemDescricao String required,
+    itemReferencia String required
+}
+
+entity DevolucaoCompra {
+    quantidade Double min(1) required,
+    valor Double min(0) required,
+    desconto Double min(0) required,
+    data ZonedDateTime,
+    descricao TextBlob
+}
+
+entity Custo {
+    descricao String required, // Trnasporte, Comissao, Imposto
+    valor BigDecimal min(0) required,
+    percentagem Boolean required
+}
+
+relationship OneToMany {
+	Compra to ItemCompra{compra(numero) required},
+    Fornecedor to ItemCompra{fornecedor(nome) required},
+    ItemCompra to Custo{item(itemDescricao) required}
+}
+
+/**
+ * One to one relationship.
+ */
+relationship OneToOne {
+    DevolucaoCompra{item required} to ItemCompra
+}
+
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+filter Compra, ItemCompra, DevolucaoCompra
