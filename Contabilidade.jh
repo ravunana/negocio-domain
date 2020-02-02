@@ -36,6 +36,15 @@ entity Credito {
     valor BigDecimal required min(0)
 }
 
+entity OutBox {
+    uuid String required unique,
+    user String required,
+    aggregate String required, // Entity Name
+    operation Operation required,
+    message TextBlob required, // Data in JSON format
+    timestamp Instant required
+}
+
 /**
  * One to many relationship.
  */
